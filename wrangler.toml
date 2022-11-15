@@ -1,0 +1,6 @@
+name = "cloudflare-worker-jwt-auth"
+main = "src/index.ts"
+compatibility_date = "2022-11-15"
+kv_namespaces = [
+  { binding = "AUTH", id = "AUTH_ID", preview_id = "AUTH_PREVIEW_ID" }
+]
