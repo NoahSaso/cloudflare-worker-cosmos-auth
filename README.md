@@ -123,8 +123,8 @@ An authorized request must have a JSON body with at least the following fields:
 
 | Field       | Type     | Description                                                                                                                                                                                            |
 | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `data`      | `object` | The data you want to send to your authorized route. This must contain the `auth` object described below. This should also contain the other properties your route expects, formatted however you like. |
-| `signature` | `string` | The signature from a Cosmos wallet signing the `data` object. The method to compute this signature is described below.                                                                                 |
+| `data`      | `object` | The data you want to send to your authorized route. This must contain the `auth` object described above. This should also contain the other properties your route expects, formatted however you like. |
+| `signature` | `string` | The signature from a Cosmos wallet signing the `data` object. The method to compute this signature is described above.                                                                                 |
 
 Example:
 
