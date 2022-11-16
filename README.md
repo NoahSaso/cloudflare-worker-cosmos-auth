@@ -1,18 +1,38 @@
 # cloudflare-worker-cosmos-auth
 
-Authentication for Cloudflare Workers using a [Cosmos](https://cosmos.network)
-wallet signature.
+[Cloudflare Workers](https://workers.cloudflare.com/) template to authenticate
+requests via a [Cosmos](https://cosmos.network) wallet signature. This lets you
+protect requests and associate data with a user's wallet identity.
+
+For example, this would let you build a Cloudflare worker to associate a name
+and NFT profile photo with a user's Cosmos wallet/identity and allow
+authenticated updates, like [DAO DAO's pfpk
+worker](https://github.com/DA0-DA0/pfpk).
 
 This is a base template you should modify to fit your needs.
 
 ## API
 
+This relies on [itty-router](https://github.com/kwhitley/itty-router), a
+lightweight router built for Cloudflare Workers. However, you can compose the
+provided `auth` functions however you'd like. This template just provides a very
+simple setup that will fully work in production.
+
+A `nonce` is used to prevent replay attacks. It is an incrementing integer,
+starting from 0, that is stored in a KV store. The nonce must be publicly
+retrievable (i.e. accessible without authentication) before each request and
+will only be valid in the following authenticated request. This mechanism
+prevents [replay attacks](https://en.wikipedia.org/wiki/Replay_attack). After
+each authenticated request, the nonce is automatically incremented. This occurs
+after the [authentication middleware](./src/auth.ts) succeeds, so even if the
+route fails due to custom logic after the middleware executes, the nonce will
+still be incremented. For this reason, the nonce should always be retrieved
+immediately before making another authenticated request.
+
 ### Setup
 
-These steps are already done in this template. Right now, a simple `GET /ping` route is
-used. Replace this with your own routes.
-
-1. Setup an unauthorized route to retrieve the `nonce` for a given `publicKey`:
+1. Set up an unauthorized route to retrieve the `nonce` for a given `publicKey`,
+   formatted as a hex string:
 
 ```ts
 import { handleNonce } from './routes/nonce'
@@ -29,26 +49,38 @@ import { handlePing } from './routes/ping'
 // Protect one route with the auth middleware.
 router.post('/ping', authMiddleware, handlePing)
 
+// OR:
+
 // Protect all remaining routes with the auth middleware.
 router.all('*', authMiddleware)
-
 // Add authorized routes below.
 ```
 
-### Usage
+These steps are already done in this template. Right now, a simple `GET /ping` route is
+used. Replace this with your own routes.
 
-1. Retrieve the current `nonce` for your public key via a `GET` request to your
-   nonce-getting route. The response will be a JSON object with the `nonce`
-   field set to a number.
+### Client usage
 
-2. Sign the entire `data` object for your authorized route with your Cosmos
-   wallet, inserting the `nonce` value retrieved from step (1). The `data`
-   object schema is described in the tables below.
+1. Retrieve the current `nonce` for a public key via your nonce-retrieval route
+   (e.g. `GET /nonce/:publicKey` from the setup above). The response will be a
+   JSON object with the `nonce` field set to a number:
+
+```json
+{
+  "nonce": 0
+}
+```
+
+2. Create and sign a `data` object for your authorized route with your Cosmos
+   wallet. The `data` object contains the `auth` object described in the table
+   below and any other data you want to send to the route. The `auth` object
+   must use the `nonce` retrieved in step (1).
 
 3. Send a `POST` request to your authorized route, with a body that looks like:
 
 ```json
 {
+  // The data object you created and signed in step (2).
   "data": {
     // The custom fields you want to use in your authorized route, if any.
     "my_custom_field": "my_custom_value",
@@ -63,19 +95,10 @@ router.all('*', authMiddleware)
 }
 ```
 
-### Request body
-
-| Field       | Type     | Description                                                                                                                                                                                            |
-| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `data`      | `object` | The data you want to send to your authorized route. This must contain the `auth` object described below. This should also contain the other properties your route expects, formatted however you like. |
-| `signature` | `string` | The signature from a Cosmos wallet signing the `data` object. The method to compute this signature is described below.                                                                                 |
-
 ### Auth object
 
-The `signature` field of the request body must contain the string signature
-returned from signing the entire `data` field with a Cosmos wallet.
-
-The `data.auth` object of the request body must contain the following fields:
+This is the `auth` object that must be included in the `data` object sent to an
+authorized route. It must contain the following fields:
 
 | Field               | Type     | Description                                                                                                                                                                                                                         |
 | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -93,6 +116,34 @@ The signature can be derived by the client via `OfflineAminoSigner`'s
 from the [`@cosmjs/amino`](https://www.npmjs.com/package/@cosmjs/amino) package.
 This can be seen in the signature verification code located in
 [src/utils.ts](./src/auth.ts#L36) around line 36.
+
+### Request body
+
+An authorized request must have a JSON body with at least the following fields:
+
+| Field       | Type     | Description                                                                                                                                                                                            |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `data`      | `object` | The data you want to send to your authorized route. This must contain the `auth` object described below. This should also contain the other properties your route expects, formatted however you like. |
+| `signature` | `string` | The signature from a Cosmos wallet signing the `data` object. The method to compute this signature is described below.                                                                                 |
+
+Example:
+
+```json
+{
+  "data": {
+    "my_custom_field": "my_custom_value",
+    "auth": {
+      "type": "Verify",
+      "nonce": 1,
+      "chainId": "juno-1",
+      "chainFeeDenom": "ujuno",
+      "chainBech32Prefix": "juno",
+      "publicKey": "..."
+    }
+  },
+  "signature": "..."
+}
+```
 
 ## Development
 
