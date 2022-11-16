@@ -1,8 +1,9 @@
 {
-  "name": "cloudflare-worker-jwt-auth",
+  "name": "cloudflare-worker-cosmos-auth",
   "version": "0.0.1",
   "devDependencies": {
     "@cloudflare/workers-types": "^3.18.0",
+    "@types/crypto-js": "^4.1.1",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.27.0",
@@ -18,6 +19,11 @@
     "deploy": "wrangler publish"
   },
   "dependencies": {
-    "jose": "^4.11.0"
+    "@cosmjs/amino": "^0.29.4",
+    "@cosmjs/crypto": "^0.29.4",
+    "@cosmjs/encoding": "^0.29.4",
+    "crypto-js": "^4.1.1",
+    "itty-cors": "^0.3.4",
+    "itty-router": "^2.6.6"
   }
 }

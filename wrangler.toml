@@ -1,6 +1,8 @@
-name = "cloudflare-worker-jwt-auth"
+name = "cloudflare-worker-cosmos-auth"
 main = "src/index.ts"
-compatibility_date = "2022-11-15"
+compatibility_date = "2022-11-16"
+node_compat = true
+
 kv_namespaces = [
-  { binding = "AUTH", id = "AUTH_ID", preview_id = "AUTH_PREVIEW_ID" }
+  { binding = "NONCES", id = "f68fbe33b7b44ad09bed1c29e7186f12", preview_id = "9817484e78b14c3385cb6483695f210f" }
 ]
