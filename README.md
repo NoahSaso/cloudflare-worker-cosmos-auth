@@ -56,8 +56,8 @@ router.all('*', authMiddleware)
 // Add authorized routes below.
 ```
 
-These steps are already done in this template. Right now, a simple `GET /ping` route is
-used. Replace this with your own routes.
+These steps are already done in this template. Right now, a simple `POST /ping`
+route is used. Replace this with your own routes.
 
 ### Client usage
 
