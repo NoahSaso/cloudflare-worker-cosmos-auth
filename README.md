@@ -15,7 +15,7 @@ This is a base template you should modify to fit your needs.
 
 This relies on [itty-router](https://github.com/kwhitley/itty-router), a
 lightweight router built for Cloudflare Workers. However, you can compose the
-provided `auth` functions however you'd like. This template just provides a very
+provided functions however you'd like. This template just provides a very
 simple setup that will fully work in production.
 
 A `nonce` is used to prevent replay attacks. It is an incrementing integer,
