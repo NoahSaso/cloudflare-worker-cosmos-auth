@@ -24,7 +24,12 @@ router.get('/nonce/:publicKey', handleNonce)
 
 ```ts
 import { authMiddleware } from './auth'
+import { handlePing } from './routes/ping'
 
+// Protect one route with the auth middleware.
+router.post('/ping', authMiddleware, handlePing)
+
+// Protect all remaining routes with the auth middleware.
 router.all('*', authMiddleware)
 
 // Add authorized routes below.

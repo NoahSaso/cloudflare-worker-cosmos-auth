@@ -26,11 +26,8 @@ router.options('*', preflight)
 // Get nonce for publicKey.
 router.get('/nonce/:publicKey', handleNonce)
 
-//! Authorized routes.
-router.all('*', authMiddleware)
-
-// Ping to test signature.
-router.post('/ping', handlePing)
+// Ping to test auth.
+router.post('/ping', authMiddleware, handlePing)
 
 // 404
 router.all('*', () => respondError(404, 'Not found'))
